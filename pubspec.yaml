@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  go_router: ^17.3.0
 
 
 
@@ -58,8 +59,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/images/
   fonts:
-    - family: YourCustomFont
+    - family: Jura
       fonts:
         - asset: assets/fonts/Jura.ttf
 

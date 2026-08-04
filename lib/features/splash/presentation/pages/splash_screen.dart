@@ -13,13 +13,13 @@ class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
-  late final Animation<double> _circleRadius; // 0 -> 1 (fraction of max radius)
-  late final Animation<double> _logoScale; // 1.0 -> 0.55
-  late final Animation<Alignment> _logoAlignment; // center -> left-of-center
-  late final Animation<double> _textOpacity; // 0 -> 1
-  late final Animation<Offset> _textSlide; // slide in from the right
+  late final Animation<double> _circleRadius;
+  late final Animation<double> _logoScale;
+  late final Animation<Alignment> _logoAlignment;
+  late final Animation<double> _textOpacity;
+  late final Animation<Offset> _textSlide;
 
-  static const Color kDarkGreen = Color(0xFF1B4332);
+  static const Color kDarkGreen = Color(0xFF0D282B);
 
   @override
   void initState() {
@@ -37,7 +37,7 @@ class _SplashPageState extends State<SplashPage>
       curve: const Interval(0.20, 0.55, curve: Curves.easeInOutCubic),
     );
 
-    _logoScale = Tween<double>(begin: 1.0, end: 0.55).animate(
+    _logoScale = Tween<double>(begin: 1.0, end: 0.60).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.55, 0.75, curve: Curves.easeOutBack),
@@ -46,7 +46,7 @@ class _SplashPageState extends State<SplashPage>
 
     _logoAlignment = Tween<Alignment>(
       begin: Alignment.center,
-      end: const Alignment(-0.35, 0.0),
+      end: const Alignment(-0.5, 0.0),
     ).animate(
       CurvedAnimation(
         parent: _controller,
@@ -92,31 +92,28 @@ class _SplashPageState extends State<SplashPage>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final maxRadius = sqrt(pow(size.width, 2) + pow(size.height, 2)) * 1.1;
+    final maxRadius =
+        sqrt(pow(size.width, 2) + pow(size.height, 2)) * 1.8;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF3F8F9),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Container(color: Colors.white),
+          Container(color: const Color(0xFFF3F8F9),),
 
           AnimatedBuilder(
             animation: _circleRadius,
-            builder: (context, child) {
-              final radius = _circleRadius.value * maxRadius;
-              return Center(
+            builder: (_, __) {
+              return ClipPath(
+                clipper: CircleRevealClipper(_circleRadius.value),
                 child: Container(
-                  width: radius * 2,
-                  height: radius * 2,
-                  decoration: const BoxDecoration(
-                    color: kDarkGreen,
-                    shape: BoxShape.circle,
-                  ),
+                  color: kDarkGreen,
                 ),
               );
             },
           ),
+
 
           // Logo + animated "Storyn" text
           AnimatedBuilder(
@@ -130,28 +127,31 @@ class _SplashPageState extends State<SplashPage>
                     Transform.scale(
                       scale: _logoScale.value,
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(24), // Adjust as needed
+                        borderRadius: BorderRadius.circular(30),
                         child: Image.asset(
                           'assets/images/logo.png',
-                          width: 140,
-                          height: 140,
+                          width: 200,
+                          height: 200,
                           fit: BoxFit.cover,
                         ),
                       ),
                     ),
                     if (_textOpacity.value > 0) ...[
-                      const SizedBox(width: 10),
-                      Opacity(
-                        opacity: _textOpacity.value,
-                        child: Transform.translate(
-                          offset: _textSlide.value,
-                          child: const Text(
-                            'Storyn',
-                            style: TextStyle(
-                              fontFamily: 'Storyn', // must match pubspec family name
-                              fontSize: 34,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                      const SizedBox(width: 1),
+                      Transform.translate(
+                        offset: const Offset(-12, 0), // Move text 12 pixels left
+                        child: ClipRect(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: _textOpacity.value,
+                            child: const Text(
+                              'Storyn',
+                              style: TextStyle(
+                                fontFamily: 'Jura',
+                                fontSize: 40,
+                                fontWeight: FontWeight.w200,
+                                color: Color(0xFFF3F8F9),
+                              ),
                             ),
                           ),
                         ),
@@ -165,5 +165,33 @@ class _SplashPageState extends State<SplashPage>
         ],
       ),
     );
+  }
+}
+
+
+class CircleRevealClipper extends CustomClipper<Path> {
+  final double progress;
+
+  CircleRevealClipper(this.progress);
+
+  @override
+  Path getClip(Size size) {
+    final center = size.center(Offset.zero);
+
+    final maxRadius =
+    sqrt(size.width * size.width + size.height * size.height);
+
+    return Path()
+      ..addOval(
+        Rect.fromCircle(
+          center: center,
+          radius: maxRadius * progress,
+        ),
+      );
+  }
+
+  @override
+  bool shouldReclip(CircleRevealClipper oldClipper) {
+    return oldClipper.progress != progress;
   }
 }

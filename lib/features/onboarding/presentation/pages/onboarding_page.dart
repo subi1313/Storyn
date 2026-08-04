@@ -6,7 +6,7 @@ class OnboardingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Color(0xFF1B4332),
+      backgroundColor: Color(0xFF0D282B),
       body: Center(
         child: Text(
           'Onboarding goes here',

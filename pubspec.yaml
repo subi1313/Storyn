@@ -61,10 +61,21 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/onboarding/
+    - assets/images/onboarding/books/
+
   fonts:
     - family: Jura
       fonts:
         - asset: assets/fonts/Jura.ttf
+
+    - family: Playfair
+      fonts:
+        - asset: assets/fonts/Playfair.ttf
+
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

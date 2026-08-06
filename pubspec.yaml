@@ -63,6 +63,7 @@ flutter:
     - assets/images/
     - assets/images/onboarding/
     - assets/images/onboarding/books/
+    - assets/images/auth/
 
   fonts:
     - family: Jura
@@ -76,6 +77,10 @@ flutter:
     - family: Poppins
       fonts:
         - asset: assets/fonts/Poppins.ttf
+
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

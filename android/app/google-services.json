@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "693484135713",
+    "project_id": "storyn-23870",
+    "storage_bucket": "storyn-23870.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:693484135713:android:75cc7807c929b26ddbca60",
+        "android_client_info": {
+          "package_name": "com.supragya.storyn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "693484135713-alch57ven17v4hsd75sfg3jj27gj4ikv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.supragya.storyn",
+            "certificate_hash": "17669916383e15b8757ea9bab4731f126982a36f"
+          }
+        },
+        {
+          "client_id": "693484135713-a8lu79lhv2gur012qp5cdgds3knpsush.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDo7EIY1tngf0s-aJUQD1FKv5iF68dAlFw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "693484135713-a8lu79lhv2gur012qp5cdgds3knpsush.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

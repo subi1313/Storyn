@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/book_model.dart';
 
@@ -15,7 +16,9 @@ class BookRemoteDataSourceImpl implements BookRemoteDataSource {
 
   @override
   Future<List<BookModel>> searchBooks(String query) async {
-    final url = Uri.parse('$_baseUrl?q=$query&maxResults=20');
+    final apiKey = dotenv.env['GOOGLE_BOOKS_API_KEY'];
+    final url = Uri.parse('$_baseUrl?q=$query&maxResults=20&key=$apiKey');
+
     final response = await client.get(url);
 
     if (response.statusCode == 200) {

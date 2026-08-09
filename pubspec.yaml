@@ -35,6 +35,10 @@ dependencies:
   firebase_auth: ^6.5.7
   google_sign_in: ^7.2.0
   firebase_analytics: ^12.4.6
+  http: ^1.6.0
+  dartz: ^0.10.1
+  get_it: ^9.2.1
+  provider: ^6.1.5+1
 
 
 

@@ -10,11 +10,12 @@ class SearchBooks implements UseCase<List<Book>, SearchBooksParams> {
 
   @override
   Future<Either<Failure, List<Book>>> call(SearchBooksParams params) {
-    return repository.searchBooks(params.query);
+    return repository.searchBooks(params.query, sortByNewest: params.sortByNewest);
   }
 }
 
 class SearchBooksParams {
   final String query;
-  SearchBooksParams({required this.query});
+  final bool sortByNewest;
+  SearchBooksParams({required this.query, this.sortByNewest = false});
 }

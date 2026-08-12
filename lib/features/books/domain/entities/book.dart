@@ -4,6 +4,8 @@ class Book {
   final String authors;
   final String? thumbnailUrl;
   final String description;
+  final String printType;
+  final int pageCount;
 
   const Book({
     required this.id,
@@ -11,5 +13,7 @@ class Book {
     required this.authors,
     this.thumbnailUrl,
     required this.description,
+    this.printType = 'BOOK',
+    this.pageCount = 0,
   });
 }

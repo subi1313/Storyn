@@ -5,7 +5,7 @@ import '../../../../core/error/exceptions.dart';
 import '../models/book_model.dart';
 
 abstract class BookRemoteDataSource {
-  Future<List<BookModel>> searchBooks(String query);
+  Future<List<BookModel>> searchBooks(String query, {bool sortByNewest = false});
 }
 
 class BookRemoteDataSourceImpl implements BookRemoteDataSource {
@@ -15,9 +15,11 @@ class BookRemoteDataSourceImpl implements BookRemoteDataSource {
   static const String _baseUrl = 'https://www.googleapis.com/books/v1/volumes';
 
   @override
-  Future<List<BookModel>> searchBooks(String query) async {
+  Future<List<BookModel>> searchBooks(String query, {bool sortByNewest = false}) async {
     final apiKey = dotenv.env['GOOGLE_BOOKS_API_KEY'];
-    final url = Uri.parse('$_baseUrl?q=$query&maxResults=20&key=$apiKey');
+    final orderByParam = sortByNewest ? '&orderBy=newest' : '';
+    final encodedQuery = Uri.encodeQueryComponent(query);
+    final url = Uri.parse('$_baseUrl?q=$encodedQuery&maxResults=20$orderByParam&key=$apiKey');
 
     final response = await client.get(url);
 

@@ -6,6 +6,7 @@ class Book {
   final String description;
   final String printType;
   final int pageCount;
+  final String publishedDate;
 
   const Book({
     required this.id,
@@ -15,5 +16,6 @@ class Book {
     required this.description,
     this.printType = 'BOOK',
     this.pageCount = 0,
+    this.publishedDate = '',
   });
 }

@@ -43,7 +43,7 @@ class BookRepositoryImpl implements BookRepository {
     }
     return result;
   }
-
+  // data/repositories/book_repository_impl.dart
   bool _isQualityBook(Book book) {
     if (book.thumbnailUrl == null || book.thumbnailUrl!.isEmpty) return false;
     if (book.printType != 'BOOK') return false;
@@ -56,10 +56,23 @@ class BookRepositoryImpl implements BookRepository {
     const junkKeywords = [
       'journal', 'notebook', 'diary', 'planner',
       'log book', 'logbook', 'composition book', 'sketchbook', 'blank book',
+      'proceedings', 'conference', 'symposium', 'quarterly', 'annual review',
+      'working paper', 'research paper', 'thesis', 'dissertation',
+      'article', 'essay collection', 'anthology of essays',
+      'how to write', 'writing guide', 'writer\'s guide', 'author\'s guide',
+      'workbook', 'study guide', 'summary of', 'summary and analysis',
+      'catalogue', 'catalog of', 'library department', 'lending department', // <-- new
     ];
     if (junkKeywords.any((word) => titleLower.contains(word))) return false;
 
-    if (book.pageCount > 0 && book.pageCount < 40) return false;
+    if (book.pageCount > 0 && book.pageCount < 80) return false;
+
+    // Exclude old public-domain scans — extract the leading 4-digit year
+    final yearMatch = RegExp(r'^\d{4}').firstMatch(book.publishedDate);
+    if (yearMatch != null) {
+      final year = int.tryParse(yearMatch.group(0)!) ?? 0;
+      if (year > 0 && year < 1990) return false; // adjust cutoff as you like
+    }
 
     return true;
   }

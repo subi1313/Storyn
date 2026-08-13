@@ -9,6 +9,7 @@ class BookModel extends Book {
     required super.description,
     super.printType,
     super.pageCount,
+    super.publishedDate,
   });
 
   factory BookModel.fromJson(Map<String, dynamic> json) {
@@ -23,23 +24,24 @@ class BookModel extends Book {
       description: volumeInfo['description'] ?? 'No description available.',
       printType: volumeInfo['printType'] ?? 'BOOK',
       pageCount: volumeInfo['pageCount'] ?? 0,
+      publishedDate: volumeInfo['publishedDate'] ?? '',
     );
   }
 
   factory BookModel.fromOpenLibraryJson(Map<String, dynamic> json) {
     final coverId = json['cover_i'];
     final authorsList = json['author_name'] as List?;
+    final year = json['first_publish_year'];
 
     return BookModel(
       id: json['key'] ?? '',
       title: json['title'] ?? 'Unknown title',
       authors: authorsList?.join(', ') ?? 'Unknown author',
-      thumbnailUrl: coverId != null
-          ? 'https://covers.openlibrary.org/b/id/$coverId-M.jpg'
-          : null,
+      thumbnailUrl: coverId != null ? 'https://covers.openlibrary.org/b/id/$coverId-M.jpg' : null,
       description: json['first_sentence']?.toString() ?? 'No description available.',
-      printType: 'BOOK', // Open Library doesn't return this; assume BOOK
+      printType: 'BOOK',
       pageCount: json['number_of_pages_median'] ?? 0,
+      publishedDate: year != null ? year.toString() : '',
     );
   }
 }

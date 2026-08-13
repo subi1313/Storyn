@@ -1,3 +1,4 @@
+// features/books/presentation/providers/books_provider.dart
 import 'package:flutter/foundation.dart';
 import '../../domain/usecases/search_books.dart';
 import '../models/book_section.dart';
@@ -7,23 +8,27 @@ class BooksProvider extends ChangeNotifier {
   BooksProvider({required this.searchBooksUseCase});
 
   String selectedMood = '';
+  final Set<String> _shownBookKeys = {};
 
   final List<BookSection> sections = [
-    BookSection(title: 'Trending now', query: 'bestselling romance novels', sortByNewest: true),
-    BookSection(title: 'Romance', query: 'romance novels bestseller'),
-    BookSection(title: 'Mystery & thriller', query: 'mystery thriller bestseller'),
-    BookSection(title: 'Horror', query: 'horror novels bestseller'),
-    BookSection(title: 'Sci-fi', query: 'science fiction novels bestseller'),
-    BookSection(title: 'Self help', query: 'self help bestseller books'),
+    BookSection(title: 'Trending now', query: 'intitle:love OR intitle:midnight OR intitle:secret romance fiction', sortByNewest: true),
+    BookSection(title: 'Romance', query: '"contemporary romance" love story fiction'),
+    BookSection(title: 'Mystery & thriller', query: 'crime thriller fiction detective murder'),
+    BookSection(title: 'Horror', query: 'horror fiction ghost supernatural fear'),
+    BookSection(title: 'Sci-fi', query: 'science fiction space dystopian future'),
+    BookSection(title: 'Self help', query: 'self improvement habits productivity mindset'),
   ];
 
   Future<void> loadHomeSections() async {
+    // Load sequentially, not concurrently, so earlier shelves' picks
+    // are known before later shelves dedupe against them.
     for (final section in sections) {
-      _loadSection(section);
+      await _loadSection(section);
     }
   }
 
-  Future<void> _loadSection(BookSection section) async {
+  // features/books/presentation/providers/books_provider.dart
+  Future<void> _loadSection(BookSection section, {bool skipCrossDedup = false}) async {
     section.status = SectionStatus.loading;
     notifyListeners();
 
@@ -37,8 +42,21 @@ class BooksProvider extends ChangeNotifier {
         section.errorMessage = failure.message;
       },
           (fetchedBooks) {
+        final books = skipCrossDedup
+            ? fetchedBooks
+            : fetchedBooks.where((book) {
+          final key = book.title.trim().toLowerCase();
+          return !_shownBookKeys.contains(key);
+        }).toList();
+
+        if (!skipCrossDedup) {
+          for (final book in books) {
+            _shownBookKeys.add(book.title.trim().toLowerCase());
+          }
+        }
+
         section.status = SectionStatus.loaded;
-        section.books = fetchedBooks;
+        section.books = books;
       },
     );
     notifyListeners();
@@ -47,9 +65,9 @@ class BooksProvider extends ChangeNotifier {
   Future<void> searchByMood(String mood) async {
     selectedMood = mood;
     sections.removeWhere((s) => s.title.startsWith('Because you like'));
-    final moodSection = BookSection(title: 'Because you like $mood', query: '$mood books bestseller');
+    final moodSection = BookSection(title: 'Because you like $mood', query: '$mood genre books novel');
     sections.insert(0, moodSection);
     notifyListeners();
-    _loadSection(moodSection);
+    await _loadSection(moodSection, skipCrossDedup: true); // <-- key change
   }
 }

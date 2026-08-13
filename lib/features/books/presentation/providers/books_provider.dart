@@ -1,12 +1,16 @@
 // features/books/presentation/providers/books_provider.dart
 import 'package:flutter/foundation.dart';
+import '../../domain/entities/book.dart';
 import '../../domain/usecases/search_books.dart';
 import '../models/book_section.dart';
+
+enum SearchStatus { initial, loading, loaded, error }
 
 class BooksProvider extends ChangeNotifier {
   final SearchBooks searchBooksUseCase;
   BooksProvider({required this.searchBooksUseCase});
 
+  // --- Home shelves (unchanged) ---
   String selectedMood = '';
   final Set<String> _shownBookKeys = {};
 
@@ -20,14 +24,11 @@ class BooksProvider extends ChangeNotifier {
   ];
 
   Future<void> loadHomeSections() async {
-    // Load sequentially, not concurrently, so earlier shelves' picks
-    // are known before later shelves dedupe against them.
     for (final section in sections) {
       await _loadSection(section);
     }
   }
 
-  // features/books/presentation/providers/books_provider.dart
   Future<void> _loadSection(BookSection section, {bool skipCrossDedup = false}) async {
     section.status = SectionStatus.loading;
     notifyListeners();
@@ -44,14 +45,11 @@ class BooksProvider extends ChangeNotifier {
           (fetchedBooks) {
         final books = skipCrossDedup
             ? fetchedBooks
-            : fetchedBooks.where((book) {
-          final key = book.title.trim().toLowerCase();
-          return !_shownBookKeys.contains(key);
-        }).toList();
+            : fetchedBooks.where((b) => !_shownBookKeys.contains(b.title.trim().toLowerCase())).toList();
 
         if (!skipCrossDedup) {
-          for (final book in books) {
-            _shownBookKeys.add(book.title.trim().toLowerCase());
+          for (final b in books) {
+            _shownBookKeys.add(b.title.trim().toLowerCase());
           }
         }
 
@@ -65,9 +63,41 @@ class BooksProvider extends ChangeNotifier {
   Future<void> searchByMood(String mood) async {
     selectedMood = mood;
     sections.removeWhere((s) => s.title.startsWith('Because you like'));
-    final moodSection = BookSection(title: 'Because you like $mood', query: '$mood genre books novel');
+    final moodSection = BookSection(title: 'Because you like $mood', query: '$mood romance fiction novel');
     sections.insert(0, moodSection);
     notifyListeners();
-    await _loadSection(moodSection, skipCrossDedup: true); // <-- key change
+    await _loadSection(moodSection, skipCrossDedup: true);
+  }
+
+  // --- Explore page search (new) ---
+  SearchStatus searchStatus = SearchStatus.initial;
+  List<Book> searchResults = [];
+  String searchErrorMessage = '';
+
+  Future<void> search(String query) async {
+    if (query.trim().isEmpty) return;
+
+    searchStatus = SearchStatus.loading;
+    notifyListeners();
+
+    final result = await searchBooksUseCase(SearchBooksParams(query: query.trim()));
+
+    result.fold(
+          (failure) {
+        searchStatus = SearchStatus.error;
+        searchErrorMessage = failure.message;
+      },
+          (fetchedBooks) {
+        searchStatus = SearchStatus.loaded;
+        searchResults = fetchedBooks;
+      },
+    );
+    notifyListeners();
+  }
+
+  void clearSearch() {
+    searchStatus = SearchStatus.initial;
+    searchResults = [];
+    notifyListeners();
   }
 }

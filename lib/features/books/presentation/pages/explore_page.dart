@@ -1,4 +1,3 @@
-// features/books/presentation/pages/explore_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -154,7 +153,6 @@ class _ExplorePageState extends State<ExplorePage> {
           itemCount: provider.searchResults.length,
           itemBuilder: (context, index) => BookCoverCard(
             book: provider.searchResults[index],
-            width: double.infinity,
           ),
         );
     }

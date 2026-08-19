@@ -32,18 +32,32 @@ class BookRepositoryImpl implements BookRepository {
     }
   }
 
+  // data/repositories/book_repository_impl.dart
   List<Book> _deduplicate(List<Book> books) {
     final seen = <String>{};
     final result = <Book>[];
 
     for (final book in books) {
       if (!_isQualityBook(book)) continue;
-      final key = '${book.title.trim().toLowerCase()}|${book.authors.trim().toLowerCase()}';
-      if (seen.add(key)) result.add(book);
+
+      final normalizedTitle = _normalize(book.title);
+      // Key on title alone — two books with the exact same title are almost
+      // always the same book (different edition/scan), even if author formatting differs.
+      if (seen.add(normalizedTitle)) {
+        result.add(book);
+      }
     }
+
     return result;
   }
-  // data/repositories/book_repository_impl.dart
+
+  String _normalize(String input) {
+    return input
+        .toLowerCase()
+        .trim()
+        .replaceAll(RegExp(r'[^\w\s]'), '') // strip punctuation (colons, apostrophes, etc.)
+        .replaceAll(RegExp(r'\s+'), ' ');   // collapse multiple spaces into one
+  }
   bool _isQualityBook(Book book) {
     if (book.thumbnailUrl == null || book.thumbnailUrl!.isEmpty) return false;
     if (book.printType != 'BOOK') return false;

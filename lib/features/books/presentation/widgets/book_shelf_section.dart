@@ -46,7 +46,10 @@ class BookShelfSection extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             itemCount: section.books.length,
             separatorBuilder: (_, __) => const SizedBox(width: 14),
-            itemBuilder: (context, index) => BookCoverCard(book: section.books[index]),
+            itemBuilder: (context, index) => BookCoverCard(
+              book: section.books[index],
+              width: 130,
+            ),
           ),
         );
       case SectionStatus.initial:

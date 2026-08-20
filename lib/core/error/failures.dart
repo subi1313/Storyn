@@ -6,3 +6,7 @@ abstract class Failure {
 class ServerFailure extends Failure {
   const ServerFailure([String message = 'Server error occurred']) : super(message);
 }
+
+class CacheFailure extends Failure {
+  const CacheFailure([String message = 'Failed to access local storage']) : super(message);
+}

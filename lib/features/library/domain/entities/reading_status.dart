@@ -1,0 +1,1 @@
+enum ReadingStatus { none, planToRead, currentlyReading, completed }

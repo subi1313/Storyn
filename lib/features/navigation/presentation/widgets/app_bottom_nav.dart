@@ -10,7 +10,7 @@ class AppBottomNav extends StatelessWidget {
   static const _items = [
     (icon: Icons.home_rounded, label: 'Home'),
     (icon: Icons.explore_rounded, label: 'Explore'),
-    (icon: Icons.favorite_rounded, label: 'Wishlist'),
+    (icon: Icons.favorite_rounded, label: 'Library'),
     (icon: Icons.person_rounded, label: 'Profile'),
   ];
 

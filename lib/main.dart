@@ -1,3 +1,4 @@
+// main.dart
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -8,6 +9,7 @@ import 'core/di/injection_container.dart';
 import 'core/router/app_router.dart';
 import 'features/books/presentation/providers/books_provider.dart';
 import 'features/library/presentation/providers/library_provider.dart';
+import 'features/settings/presentation/providers/settings_provider.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -27,10 +29,15 @@ class StorynApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => sl<BooksProvider>()..loadHomeSections()),
         ChangeNotifierProvider(create: (_) => sl<LibraryProvider>()..loadLibrary()),
+        ChangeNotifierProvider(create: (_) => sl<SettingsProvider>()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         title: 'Storyn',
+        theme: ThemeData(
+          scaffoldBackgroundColor: Colors.white,
+          fontFamily: 'Inter',
+        ),
         routerConfig: appRouter,
       ),
     );

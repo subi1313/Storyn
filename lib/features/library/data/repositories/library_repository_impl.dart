@@ -1,9 +1,11 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
+import '../../domain/entities/collection.dart';
 import '../../domain/entities/saved_book.dart';
 import '../../domain/repositories/library_repository.dart';
 import '../datasources/library_local_data_source.dart';
+import '../models/collection_model.dart';
 import '../models/saved_book_model.dart';
 
 class LibraryRepositoryImpl implements LibraryRepository {
@@ -13,8 +15,7 @@ class LibraryRepositoryImpl implements LibraryRepository {
   @override
   Future<Either<Failure, List<SavedBook>>> getSavedBooks() async {
     try {
-      final books = await localDataSource.getSavedBooks();
-      return Right(books);
+      return Right(await localDataSource.getSavedBooks());
     } on CacheException {
       return const Left(CacheFailure());
     }
@@ -23,16 +24,10 @@ class LibraryRepositoryImpl implements LibraryRepository {
   @override
   Future<Either<Failure, void>> saveBook(SavedBook book) async {
     try {
-      print('REPO: attempting to save ${book.id} - ${book.title}');
       await localDataSource.saveBook(SavedBookModel.fromEntity(book));
-      print('REPO: save call completed');
       return const Right(null);
-    } on CacheException catch (e) {
-      print('REPO: CacheException caught: $e');
+    } on CacheException {
       return const Left(CacheFailure());
-    } catch (e) {
-      print('REPO: unexpected error: $e');
-      return Left(CacheFailure(e.toString()));
     }
   }
 
@@ -51,6 +46,35 @@ class LibraryRepositoryImpl implements LibraryRepository {
     try {
       final books = await localDataSource.getSavedBooks();
       return Right(books.any((b) => b.id == bookId));
+    } on CacheException {
+      return const Left(CacheFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Collection>>> getCollections() async {
+    try {
+      return Right(await localDataSource.getCollections());
+    } on CacheException {
+      return const Left(CacheFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> createCollection(Collection collection) async {
+    try {
+      await localDataSource.saveCollection(CollectionModel.fromEntity(collection));
+      return const Right(null);
+    } on CacheException {
+      return const Left(CacheFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteCollection(String collectionId) async {
+    try {
+      await localDataSource.deleteCollection(collectionId);
+      return const Right(null);
     } on CacheException {
       return const Left(CacheFailure());
     }

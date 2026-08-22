@@ -16,12 +16,19 @@ import '../../features/library/domain/usecases/save_book.dart';
 import '../../features/library/domain/usecases/remove_book.dart';
 import '../../features/library/domain/usecases/is_book_saved.dart';
 import '../../features/library/presentation/providers/library_provider.dart';
+import '../../features/library/domain/usecases/create_collection.dart';
+import '../../features/library/domain/usecases/delete_collection.dart';
+import '../../features/library/domain/usecases/get_collections.dart';
+import '../../features/settings/presentation/providers/settings_provider.dart';
 
 final sl = GetIt.instance;
 
 Future<void> init() async {
   sl.registerFactory(() => BooksProvider(searchBooksUseCase: sl()));
   sl.registerLazySingleton(() => SearchBooks(sl()));
+  sl.registerLazySingleton(() => GetCollections(sl()));
+  sl.registerLazySingleton(() => CreateCollection(sl()));
+  sl.registerLazySingleton(() => DeleteCollection(sl()));
 
   sl.registerLazySingleton<BookRepository>(
         () => BookRepositoryImpl(
@@ -45,6 +52,9 @@ Future<void> init() async {
     saveBookUseCase: sl(),
     removeBookUseCase: sl(),
     isBookSavedUseCase: sl(),
+    getCollectionsUseCase: sl(),
+    createCollectionUseCase: sl(),
+    deleteCollectionUseCase: sl(),
   ));
   sl.registerLazySingleton(() => GetSavedBooks(sl()));
   sl.registerLazySingleton(() => SaveBook(sl()));
@@ -55,4 +65,5 @@ Future<void> init() async {
 
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
+  sl.registerLazySingleton(() => SettingsProvider(prefs: sharedPreferences));
 }

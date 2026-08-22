@@ -10,6 +10,8 @@ class SavedBookModel extends SavedBook {
     required super.description,
     required super.savedAt,
     super.status,
+    super.collectionIds,
+    super.epubPath,
   });
 
   factory SavedBookModel.fromJson(Map<String, dynamic> json) {
@@ -20,10 +22,9 @@ class SavedBookModel extends SavedBook {
       thumbnailUrl: json['thumbnailUrl'],
       description: json['description'] ?? '',
       savedAt: DateTime.tryParse(json['savedAt'] ?? '') ?? DateTime.now(),
-      status: ReadingStatus.values.firstWhere(
-            (s) => s.name == json['status'],
-        orElse: () => ReadingStatus.none,
-      ),
+      status: ReadingStatus.values.firstWhere((s) => s.name == json['status'], orElse: () => ReadingStatus.none),
+      collectionIds: (json['collectionIds'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      epubPath: json['epubPath'],
     );
   }
 
@@ -36,6 +37,8 @@ class SavedBookModel extends SavedBook {
       'description': description,
       'savedAt': savedAt.toIso8601String(),
       'status': status.name,
+      'collectionIds': collectionIds,
+      'epubPath': epubPath,
     };
   }
 
@@ -48,6 +51,8 @@ class SavedBookModel extends SavedBook {
       description: book.description,
       savedAt: book.savedAt,
       status: book.status,
+      collectionIds: book.collectionIds,
+      epubPath: book.epubPath,
     );
   }
 }

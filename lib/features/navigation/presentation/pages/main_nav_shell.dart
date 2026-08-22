@@ -8,6 +8,7 @@ import '../../../home/presentation/pages/home_page.dart';
 import '../../../library/presentation/pages/library_page.dart';
 import '../../../library/presentation/providers/library_provider.dart';
 import '../widgets/app_bottom_nav.dart';
+import '../../../profile/presentation/pages/profile_page.dart';
 
 class MainNavShell extends StatelessWidget {
   const MainNavShell({super.key});
@@ -38,7 +39,7 @@ class _MainNavShellViewState extends State<_MainNavShellView> {
     HomePage(),
     ExplorePage(),
     LibraryPage(),
-    _ProfilePlaceholder(),
+    ProfilePage(),
   ];
 
   @override

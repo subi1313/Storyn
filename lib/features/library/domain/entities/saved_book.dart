@@ -8,7 +8,8 @@ class SavedBook {
   final String description;
   final DateTime savedAt;
   final ReadingStatus status;
-  final List<String> collectionIds; // <-- new
+  final List<String> collectionIds;
+  final String? epubPath;
 
   const SavedBook({
     required this.id,
@@ -19,9 +20,10 @@ class SavedBook {
     required this.savedAt,
     this.status = ReadingStatus.none,
     this.collectionIds = const [],
+    this.epubPath,
   });
 
-  SavedBook copyWith({ReadingStatus? status, List<String>? collectionIds}) {
+  SavedBook copyWith({ReadingStatus? status, List<String>? collectionIds, String? epubPath}) {
     return SavedBook(
       id: id,
       title: title,
@@ -31,6 +33,7 @@ class SavedBook {
       savedAt: savedAt,
       status: status ?? this.status,
       collectionIds: collectionIds ?? this.collectionIds,
+      epubPath: epubPath ?? this.epubPath,
     );
   }
 }

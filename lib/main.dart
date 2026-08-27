@@ -1,4 +1,3 @@
-// main.dart
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -7,8 +6,10 @@ import 'package:provider/provider.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/di/injection_container.dart';
 import 'core/router/app_router.dart';
+import 'features/auth/presentation/providers/auth_session_provider.dart';
 import 'features/books/presentation/providers/books_provider.dart';
 import 'features/library/presentation/providers/library_provider.dart';
+import 'features/profile/presentation/providers/profile_refresh_provider.dart';
 import 'features/settings/presentation/providers/settings_provider.dart';
 import 'firebase_options.dart';
 
@@ -30,6 +31,8 @@ class StorynApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => sl<BooksProvider>()..loadHomeSections()),
         ChangeNotifierProvider(create: (_) => sl<LibraryProvider>()..loadLibrary()),
         ChangeNotifierProvider(create: (_) => sl<SettingsProvider>()),
+        ChangeNotifierProvider(create: (_) => sl<ProfileRefreshProvider>()),
+        ChangeNotifierProvider(create: (_) => sl<AuthSessionProvider>()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

@@ -12,6 +12,11 @@ class SavedBookModel extends SavedBook {
     super.status,
     super.collectionIds,
     super.epubPath,
+    super.bookmarkCfis,
+    super.readingProgress,
+    super.lastCfi,
+    super.rating,
+    super.reviewText,
   });
 
   factory SavedBookModel.fromJson(Map<String, dynamic> json) {
@@ -25,6 +30,11 @@ class SavedBookModel extends SavedBook {
       status: ReadingStatus.values.firstWhere((s) => s.name == json['status'], orElse: () => ReadingStatus.none),
       collectionIds: (json['collectionIds'] as List?)?.map((e) => e.toString()).toList() ?? [],
       epubPath: json['epubPath'],
+      bookmarkCfis: (json['bookmarkCfis'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      readingProgress: (json['readingProgress'] as num?)?.toDouble() ?? 0.0,
+      lastCfi: json['lastCfi'],
+      rating: (json['rating'] as num?)?.toDouble(),
+      reviewText: json['reviewText'],
     );
   }
 
@@ -39,6 +49,11 @@ class SavedBookModel extends SavedBook {
       'status': status.name,
       'collectionIds': collectionIds,
       'epubPath': epubPath,
+      'bookmarkCfis': bookmarkCfis,
+      'readingProgress': readingProgress,
+      'lastCfi': lastCfi,
+      'rating': rating,
+      'reviewText': reviewText,
     };
   }
 
@@ -53,6 +68,11 @@ class SavedBookModel extends SavedBook {
       status: book.status,
       collectionIds: book.collectionIds,
       epubPath: book.epubPath,
+      bookmarkCfis: book.bookmarkCfis,
+      readingProgress: book.readingProgress,
+      lastCfi: book.lastCfi,
+      rating: book.rating,
+      reviewText: book.reviewText,
     );
   }
 }

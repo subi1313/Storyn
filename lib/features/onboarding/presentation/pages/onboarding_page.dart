@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:storyn/core/theme/app_colors.dart';
+import '../../../auth/presentation/providers/auth_session_provider.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -53,9 +55,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ),
   ];
 
-  void _onButtonPressed() {
+  Future<void> _onButtonPressed() async {
     if (_currentPage == _pages.length - 1) {
-      context.go('/welcome');
+      await context.read<AuthSessionProvider>().markOnboardingComplete();
+      if (context.mounted) context.go('/welcome');
     } else {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 350),
@@ -83,23 +86,23 @@ class _OnboardingPageState extends State<OnboardingPage> {
           return Column(
             children: [
               Expanded(
-                flex: 8,
-                child: Container(
-                  width: double.infinity,
-                  color: page.topColor,
-                  child: page.bookImages != null
-                      ? _buildBookGrid(page.bookImages!)
-                      : Transform.translate(
-                    offset: const Offset(0, 35), // Move image down
-                    child: Image.asset(
-                      page.image!,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
+                  flex: 8,
+                  child: Container(
+                    width: double.infinity,
+                    color: page.topColor,
+                    child: page.bookImages != null
+                        ? _buildBookGrid(page.bookImages!)
+                        : Transform.translate(
+                      offset: const Offset(0, 35),
+                      child: Image.asset(
+                        page.image!,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   )
-                ),
+              ),
               Expanded(
                 flex: 4,
                 child: Container(
@@ -115,16 +118,16 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       Text(
                         page.title,
                         style: const TextStyle(
-                            fontFamily: 'Playfair',
-                            fontSize: 24,
+                          fontFamily: 'Playfair',
+                          fontSize: 24,
                         ),
                       ),
                       const SizedBox(height: 10),
                       Text(
                         page.description,
                         style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 16,
+                          fontFamily: 'Poppins',
+                          fontSize: 16,
                         ),
                       ),
                       const Spacer(),

@@ -10,6 +10,11 @@ class SavedBook {
   final ReadingStatus status;
   final List<String> collectionIds;
   final String? epubPath;
+  final List<String> bookmarkCfis;
+  final double readingProgress;
+  final String? lastCfi;
+  final double? rating;
+  final String? reviewText;
 
   const SavedBook({
     required this.id,
@@ -21,9 +26,23 @@ class SavedBook {
     this.status = ReadingStatus.none,
     this.collectionIds = const [],
     this.epubPath,
+    this.bookmarkCfis = const [],
+    this.readingProgress = 0.0,
+    this.lastCfi,
+    this.rating,
+    this.reviewText,
   });
 
-  SavedBook copyWith({ReadingStatus? status, List<String>? collectionIds, String? epubPath}) {
+  SavedBook copyWith({
+    ReadingStatus? status,
+    List<String>? collectionIds,
+    String? epubPath,
+    List<String>? bookmarkCfis,
+    double? readingProgress,
+    String? lastCfi,
+    double? rating,
+    String? reviewText,
+  }) {
     return SavedBook(
       id: id,
       title: title,
@@ -34,6 +53,11 @@ class SavedBook {
       status: status ?? this.status,
       collectionIds: collectionIds ?? this.collectionIds,
       epubPath: epubPath ?? this.epubPath,
+      bookmarkCfis: bookmarkCfis ?? this.bookmarkCfis,
+      readingProgress: readingProgress ?? this.readingProgress,
+      lastCfi: lastCfi ?? this.lastCfi,
+      rating: rating ?? this.rating,
+      reviewText: reviewText ?? this.reviewText,
     );
   }
 }

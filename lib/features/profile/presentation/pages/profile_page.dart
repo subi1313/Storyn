@@ -1,12 +1,10 @@
-import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
+import '../providers/profile_refresh_provider.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -15,6 +13,7 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final settings = context.watch<SettingsProvider>();
+    context.watch<ProfileRefreshProvider>();
 
     return SafeArea(
       child: ListView(
@@ -28,32 +27,16 @@ class ProfilePage extends StatelessWidget {
             decoration: BoxDecoration(color: AppColors.textSecondary, borderRadius: BorderRadius.circular(16)),
             child: Row(
               children: [
-                GestureDetector(
-                  onTap: () => _editProfilePicture(context),
-                  child: Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundColor: AppColors.onboardingButton,
-                        backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
-                        child: user?.photoURL == null
-                            ? Text(
-                          (user?.displayName?.isNotEmpty == true ? user!.displayName![0] : user?.email?[0] ?? '?').toUpperCase(),
-                          style: const TextStyle(fontFamily: 'Poppins', fontSize: 20, color: AppColors.white),
-                        )
-                            : null,
-                      ),
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(color: AppColors.dotActive, shape: BoxShape.circle),
-                          child: const Icon(Icons.edit, size: 12, color: AppColors.white),
-                        ),
-                      ),
-                    ],
-                  ),
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: AppColors.onboardingButton,
+                  backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
+                  child: user?.photoURL == null
+                      ? Text(
+                    (user?.displayName?.isNotEmpty == true ? user!.displayName![0] : user?.email?[0] ?? '?').toUpperCase(),
+                    style: const TextStyle(fontFamily: 'Poppins', fontSize: 20, color: AppColors.white),
+                  )
+                      : null,
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -72,7 +55,6 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Icon(Icons.chevron_right, size: 18, color: AppColors.dotInactive),
               ],
             ),
           ),
@@ -114,10 +96,14 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: AppColors.white,
         title: const Text('Help & FAQ', style: TextStyle(fontFamily: 'Poppins', fontSize: 16)),
         content: const Text(
-          'Search for books using the Explore tab, tap "Add to library" on any book to save it, '
-              'organize saved books by reading status or your own custom collections, and remove books '
-              'anytime from the library screen.',
-          style: TextStyle(fontFamily: 'Inter', fontSize: 13, height: 1.5),
+          'Discover books by mood or genre on Home, or search directly on Explore. '
+              'Tap "Add to library" on any book to save it — choose a reading status '
+              '(Plan to read, Currently reading, Completed) and tag it into custom collections.\n\n'
+              'In your Library, tap into any folder to see its books, long-press a custom '
+              'collection to delete it, and tap the × on any book to remove it entirely.\n\n'
+              'Import your own EPUB files from a saved book\'s card to read them right in the app, '
+              'complete with bookmarks and progress tracking.',
+          style: TextStyle(fontFamily: 'Inter', fontSize: 13, height: 1.6),
         ),
         actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Got it'))],
       ),
@@ -134,13 +120,14 @@ class ProfilePage extends StatelessWidget {
       children: const [
         SizedBox(height: 16),
         Text(
-          'Storyn helps you discover your next favorite book, organize your reading '
-              'into custom collections, and track your progress from "plan to read" to "completed."',
+          'Storyn is your personal reading companion — discover books by mood or genre, '
+              'organize your reading into custom collections, track progress from "plan to read" '
+              'to "completed," and read your own EPUB files without leaving the app.',
           style: TextStyle(fontFamily: 'Inter', fontSize: 13, height: 1.5),
         ),
         SizedBox(height: 12),
         Text(
-          'Built with Flutter, powered by Google Books and Open Library.',
+          'Book data powered by Google Books and Open Library. Built with Flutter.',
           style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.dotActive),
         ),
       ],
@@ -190,6 +177,10 @@ class ProfilePage extends StatelessWidget {
               final newName = controller.text.trim();
               if (newName.isNotEmpty) {
                 await FirebaseAuth.instance.currentUser?.updateDisplayName(newName);
+                await FirebaseAuth.instance.currentUser?.reload();
+                if (dialogContext.mounted) {
+                  Provider.of<ProfileRefreshProvider>(dialogContext, listen: false).refresh();
+                }
               }
               if (dialogContext.mounted) Navigator.pop(dialogContext);
             },
@@ -198,36 +189,6 @@ class ProfilePage extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _editProfilePicture(BuildContext context) async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-    if (picked == null) return;
-
-    if (context.mounted) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      final ref = FirebaseStorage.instance.ref().child('profile_pictures/${user.uid}.jpg');
-      await ref.putFile(File(picked.path));
-      final downloadUrl = await ref.getDownloadURL();
-
-      await user.updatePhotoURL(downloadUrl);
-      await user.reload();
-    } catch (e) {
-      print('PROFILE: photo upload failed - $e');
-    } finally {
-      if (context.mounted) Navigator.pop(context);
-    }
   }
 }
 

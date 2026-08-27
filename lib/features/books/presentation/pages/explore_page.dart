@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/books_provider.dart';
@@ -122,14 +123,21 @@ class _ExplorePageState extends State<ExplorePage> {
   Widget _buildBody(BooksProvider provider) {
     switch (provider.searchStatus) {
       case SearchStatus.initial:
-        return const Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40),
-            child: Text(
-              'Search for a title, author, or tap a genre above to start exploring.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textPrimary),
-            ),
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Lottie.asset('assets/animations/empty_search.json', width: 200, height: 200, repeat: true),
+              const SizedBox(height: 12),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 40),
+                child: Text(
+                  'Search for a title, author, or tap a genre above to start exploring.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textPrimary),
+                ),
+              ),
+            ],
           ),
         );
       case SearchStatus.loading:

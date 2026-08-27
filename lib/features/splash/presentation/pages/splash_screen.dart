@@ -1,6 +1,11 @@
 import 'dart:math';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import '../../../auth/presentation/providers/auth_session_provider.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -34,13 +39,24 @@ class _SplashPageState extends State<SplashPage>
     // 0.55-0.75 logo shrinks + shifts left  |  0.70-1.00 text fades/slides in
     _circleRadius = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.20, 0.55, curve: Curves.easeInOutCubic),
+      curve: const Interval(
+        0.20,
+        0.55,
+        curve: Curves.easeInOutCubic,
+      ),
     );
 
-    _logoScale = Tween<double>(begin: 1.0, end: 0.60).animate(
+    _logoScale = Tween<double>(
+      begin: 1.0,
+      end: 0.60,
+    ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.55, 0.75, curve: Curves.easeOutBack),
+        curve: const Interval(
+          0.55,
+          0.75,
+          curve: Curves.easeOutBack,
+        ),
       ),
     );
 
@@ -50,14 +66,25 @@ class _SplashPageState extends State<SplashPage>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.55, 0.75, curve: Curves.easeOutCubic),
+        curve: const Interval(
+          0.55,
+          0.75,
+          curve: Curves.easeOutCubic,
+        ),
       ),
     );
 
-    _textOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _textOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.70, 1.0, curve: Curves.easeOut),
+        curve: const Interval(
+          0.70,
+          1.0,
+          curve: Curves.easeOut,
+        ),
       ),
     );
 
@@ -67,7 +94,11 @@ class _SplashPageState extends State<SplashPage>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.70, 1.0, curve: Curves.easeOutCubic),
+        curve: const Interval(
+          0.70,
+          1.0,
+          curve: Curves.easeOutCubic,
+        ),
       ),
     );
 
@@ -77,10 +108,39 @@ class _SplashPageState extends State<SplashPage>
       if (status == AnimationStatus.completed) {
         Future.delayed(const Duration(milliseconds: 400), () {
           if (!mounted) return;
-          context.go('/onboarding');
+
+          _decideNextRoute(context);
         });
       }
     });
+  }
+
+  Future<void> _decideNextRoute(BuildContext context) async {
+    final authSession = context.read<AuthSessionProvider>();
+
+    if (!authSession.hasSeenOnboarding) {
+      if (!mounted) return;
+      context.go('/onboarding');
+      return;
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      if (!mounted) return;
+      context.go('/welcome');
+      return;
+    }
+
+    final sessionValid = await authSession.isSessionValid();
+
+    if (!mounted) return;
+
+    if (sessionValid) {
+      context.go('/home');
+    } else {
+      context.go('/welcome');
+    }
   }
 
   @override
@@ -92,6 +152,7 @@ class _SplashPageState extends State<SplashPage>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+
     final maxRadius =
         sqrt(pow(size.width, 2) + pow(size.height, 2)) * 1.8;
 
@@ -100,20 +161,23 @@ class _SplashPageState extends State<SplashPage>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Container(color: const Color(0xFFF3F8F9),),
+          Container(
+            color: const Color(0xFFF3F8F9),
+          ),
 
           AnimatedBuilder(
             animation: _circleRadius,
             builder: (_, __) {
               return ClipPath(
-                clipper: CircleRevealClipper(_circleRadius.value),
+                clipper: CircleRevealClipper(
+                  _circleRadius.value,
+                ),
                 child: Container(
                   color: kDarkGreen,
                 ),
               );
             },
           ),
-
 
           // Logo + animated "Storyn" text
           AnimatedBuilder(
@@ -139,7 +203,7 @@ class _SplashPageState extends State<SplashPage>
                     if (_textOpacity.value > 0) ...[
                       const SizedBox(width: 1),
                       Transform.translate(
-                        offset: const Offset(-12, 0), // Move text 12 pixels left
+                        offset: const Offset(-12, 0),
                         child: ClipRect(
                           child: Align(
                             alignment: Alignment.centerLeft,
@@ -167,7 +231,6 @@ class _SplashPageState extends State<SplashPage>
     );
   }
 }
-
 
 class CircleRevealClipper extends CustomClipper<Path> {
   final double progress;

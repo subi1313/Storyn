@@ -78,34 +78,72 @@ class LibraryProvider extends ChangeNotifier {
     return match.isEmpty ? [] : match.first.collectionIds;
   }
 
-  Future<bool> saveWithOptions(SavedBook baseBook, {ReadingStatus? status, List<String>? collectionIds}) async {
-    print('PROVIDER: saveWithOptions bookId="${baseBook.id}" incomingStatus=$status');
+  Future<bool> saveWithOptions(
+      SavedBook baseBook, {
+        ReadingStatus? status,
+        List<String>? collectionIds,
+      }) async {
+    print(
+      'PROVIDER: saveWithOptions '
+          'bookId="${baseBook.id}" '
+          'progress=${baseBook.readingProgress} '
+          'lastCfi=${baseBook.lastCfi}',
+    );
 
     final existing = savedBooks.where((b) => b.id == baseBook.id);
+
     final current = existing.isEmpty ? baseBook : existing.first;
 
     final updated = current.copyWith(
       status: status ?? current.status,
       collectionIds: collectionIds ?? current.collectionIds,
+
+      // Preserve the progress and CFI coming from the reader.
+      readingProgress: baseBook.readingProgress,
+      lastCfi: baseBook.lastCfi,
+
+      // Also preserve these values from the incoming book.
+      bookmarkCfis: baseBook.bookmarkCfis,
+      epubPath: baseBook.epubPath,
+      rating: baseBook.rating,
+      reviewText: baseBook.reviewText,
     );
-    print('PROVIDER: resolved status=${updated.status}, will call saveBookUseCase');
+
+    print(
+      'PROVIDER: saving '
+          'progress=${updated.readingProgress} '
+          'lastCfi=${updated.lastCfi}',
+    );
 
     final result = await saveBookUseCase(updated);
+
     return result.fold(
           (failure) {
-        print('PROVIDER: save FAILED - ${failure.message}');
+        print(
+          'PROVIDER: save FAILED - ${failure.message}',
+        );
         return false;
       },
           (_) {
-        print('PROVIDER: save SUCCEEDED, updated.status=${updated.status}');
+        print(
+          'PROVIDER: save SUCCEEDED '
+              'progress=${updated.readingProgress}',
+        );
+
         _savedIds.add(updated.id);
-        final index = savedBooks.indexWhere((b) => b.id == updated.id);
+
+        final index = savedBooks.indexWhere(
+              (b) => b.id == updated.id,
+        );
+
         if (index != -1) {
           savedBooks[index] = updated;
         } else {
           savedBooks.add(updated);
         }
+
         notifyListeners();
+
         return true;
       },
     );

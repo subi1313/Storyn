@@ -1,4 +1,3 @@
-// core/di/injection_container.dart
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import '../../features/books/data/datasources/book_remote_data_source.dart';
@@ -22,15 +21,22 @@ import '../../features/library/domain/usecases/delete_collection.dart';
 import '../../features/library/domain/usecases/get_collections.dart';
 import '../../features/settings/presentation/providers/settings_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../features/profile/presentation/providers/profile_refresh_provider.dart';
+import '../../features/auth/presentation/providers/auth_session_provider.dart';
 
 final sl = GetIt.instance;
 
 Future<void> init() async {
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton(() => sharedPreferences);
+
   sl.registerFactory(() => BooksProvider(searchBooksUseCase: sl()));
   sl.registerLazySingleton(() => SearchBooks(sl()));
   sl.registerLazySingleton(() => GetCollections(sl()));
   sl.registerLazySingleton(() => CreateCollection(sl()));
   sl.registerLazySingleton(() => DeleteCollection(sl()));
+  sl.registerLazySingleton(() => ProfileRefreshProvider());
+  sl.registerLazySingleton(() => AuthSessionProvider(prefs: sharedPreferences)); // now valid
 
   sl.registerLazySingleton<BookRepository>(
         () => BookRepositoryImpl(
@@ -68,7 +74,5 @@ Future<void> init() async {
   );
   sl.registerLazySingleton(() => FirebaseFirestore.instance);
 
-  final sharedPreferences = await SharedPreferences.getInstance();
-  sl.registerLazySingleton(() => sharedPreferences);
-  sl.registerLazySingleton(() => SettingsProvider(prefs: sharedPreferences));
+  sl.registerLazySingleton(() => SettingsProvider(prefs: sharedPreferences)); // moved up, now valid
 }

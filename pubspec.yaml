@@ -53,6 +53,7 @@ dependencies:
   path_provider: ^2.1.6
   cloud_firestore: ^6.8.0
   flutter_epub_viewer: ^2.0.0
+  lottie: ^3.5.1
 
 dev_dependencies:
   flutter_test:
@@ -81,6 +82,7 @@ flutter:
     - assets/images/onboarding/books/
     - assets/images/auth/
     - .env
+    - assets/animations/empty_search.json
 
   fonts:
     - family: Jura

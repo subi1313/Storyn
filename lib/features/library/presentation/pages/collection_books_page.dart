@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/reading_status.dart';
 import '../providers/library_provider.dart';
+import '../../domain/entities/saved_book.dart';
 import '../widgets/saved_book_tile.dart';
 
 enum LibraryFilterType { all, status, collection }
@@ -54,7 +55,7 @@ class CollectionBooksPage extends StatelessWidget {
     );
   }
 
-  List<String> _buildTags(book, LibraryProvider provider) {
+  List<String> _buildTags(SavedBook book, LibraryProvider provider) {
     final tags = <String>[];
     if (book.status != ReadingStatus.none) {
       tags.add(_statusLabel(book.status));

@@ -9,6 +9,7 @@ import '../../features/books/domain/usecases/search_books.dart';
 import '../../features/books/presentation/providers/books_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/library/data/datasources/library_local_data_source.dart';
+import '../../features/library/data/datasources/library_remote_data_source.dart';
 import '../../features/library/data/repositories/library_repository_impl.dart';
 import '../../features/library/domain/repositories/library_repository.dart';
 import '../../features/library/domain/usecases/get_saved_books.dart';
@@ -20,6 +21,7 @@ import '../../features/library/domain/usecases/create_collection.dart';
 import '../../features/library/domain/usecases/delete_collection.dart';
 import '../../features/library/domain/usecases/get_collections.dart';
 import '../../features/settings/presentation/providers/settings_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 final sl = GetIt.instance;
 
@@ -47,7 +49,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => http.Client());
 
   // Library feature
-  sl.registerFactory(() => LibraryProvider(
+  sl.registerLazySingleton(() => LibraryProvider(
     getSavedBooksUseCase: sl(),
     saveBookUseCase: sl(),
     removeBookUseCase: sl(),
@@ -61,7 +63,10 @@ Future<void> init() async {
   sl.registerLazySingleton(() => RemoveBook(sl()));
   sl.registerLazySingleton(() => IsBookSaved(sl()));
   sl.registerLazySingleton<LibraryRepository>(() => LibraryRepositoryImpl(localDataSource: sl()));
-  sl.registerLazySingleton<LibraryLocalDataSource>(() => LibraryLocalDataSourceImpl(prefs: sl()));
+  sl.registerLazySingleton<LibraryLocalDataSource>(
+        () => LibraryRemoteDataSourceImpl(firestore: sl()),
+  );
+  sl.registerLazySingleton(() => FirebaseFirestore.instance);
 
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);

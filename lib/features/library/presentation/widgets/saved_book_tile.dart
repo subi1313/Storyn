@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/saved_book.dart';
 import '../providers/library_provider.dart';
-import '../pages/epub_reader_placeholder_page.dart';
+import '../pages/epub_reader_page.dart';
 
 class SavedBookTile extends StatelessWidget {
   final SavedBook book;
@@ -54,7 +54,7 @@ class SavedBookTile extends StatelessWidget {
                   onTap: () {
                     if (book.epubPath != null) {
                       Navigator.push(context, MaterialPageRoute(
-                        builder: (_) => EpubReaderPlaceholderPage(title: book.title, epubPath: book.epubPath!),
+                        builder: (_) => EpubReaderPage(title: book.title, epubPath: book.epubPath!),
                       ));
                     } else {
                       context.read<LibraryProvider>().importEpub(book);

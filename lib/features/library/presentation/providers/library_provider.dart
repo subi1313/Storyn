@@ -57,14 +57,14 @@ class LibraryProvider extends ChangeNotifier {
       },
           (books) {
         status = LibraryStatus.loaded;
-        savedBooks = books;
+        savedBooks = List<SavedBook>.from(books);
         _savedIds
           ..clear()
           ..addAll(books.map((b) => b.id));
       },
     );
 
-    collectionsResult.fold((_) {}, (fetched) => collections = fetched);
+    collectionsResult.fold((_) {}, (fetched) => collections = List<Collection>.from(fetched));
     notifyListeners();
   }
 
@@ -78,7 +78,7 @@ class LibraryProvider extends ChangeNotifier {
     return match.isEmpty ? [] : match.first.collectionIds;
   }
 
-  Future<void> saveWithOptions(SavedBook baseBook, {ReadingStatus? status, List<String>? collectionIds}) async {
+  Future<bool> saveWithOptions(SavedBook baseBook, {ReadingStatus? status, List<String>? collectionIds}) async {
     print('PROVIDER: saveWithOptions bookId="${baseBook.id}" incomingStatus=$status');
 
     final existing = savedBooks.where((b) => b.id == baseBook.id);
@@ -91,8 +91,11 @@ class LibraryProvider extends ChangeNotifier {
     print('PROVIDER: resolved status=${updated.status}, will call saveBookUseCase');
 
     final result = await saveBookUseCase(updated);
-    result.fold(
-          (failure) => print('PROVIDER: save FAILED - ${failure.message}'),
+    return result.fold(
+          (failure) {
+        print('PROVIDER: save FAILED - ${failure.message}');
+        return false;
+      },
           (_) {
         print('PROVIDER: save SUCCEEDED, updated.status=${updated.status}');
         _savedIds.add(updated.id);
@@ -103,6 +106,7 @@ class LibraryProvider extends ChangeNotifier {
           savedBooks.add(updated);
         }
         notifyListeners();
+        return true;
       },
     );
   }

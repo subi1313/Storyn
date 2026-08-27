@@ -113,17 +113,23 @@ class _AddToLibrarySheetState extends State<AddToLibrarySheet> {
                   );
                   print('SHEET: saving with status=$_selectedStatus, collections=$_selectedCollectionIds, bookId="${widget.book.id}"');
 
-                  await context.read<LibraryProvider>().saveWithOptions(
+                  final success = await context.read<LibraryProvider>().saveWithOptions(
                     savedBook,
                     status: _selectedStatus ?? ReadingStatus.none,
                     collectionIds: _selectedCollectionIds.toList(),
                   );
 
                   if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Saved to library'), duration: Duration(seconds: 1)),
-                    );
+                    if (success) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Saved to library'), duration: Duration(seconds: 1)),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Failed to save — check your connection'), duration: Duration(seconds: 2)),
+                      );
+                    }
                   }
                 },
                 child: const Text('Save', style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.white)),

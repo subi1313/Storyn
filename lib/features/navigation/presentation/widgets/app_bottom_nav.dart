@@ -16,18 +16,16 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      margin: EdgeInsets.fromLTRB(20, 0, 20, bottomInset + 12), // <-- was fixed 20
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
-          BoxShadow(
-            color: AppColors.dotActive.withOpacity(0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
+          BoxShadow(color: AppColors.dotActive.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 8)),
         ],
       ),
       child: Row(

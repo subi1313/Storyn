@@ -21,6 +21,14 @@ Storyn is a cross-platform mobile app built with Flutter that lets users search 
 |--------------------------------------|--------------------------------------------|--------------------------------------------------|------------------------------------------|--------------------------------------|
 | ![home](assets/screenshots/home.png) | ![library](assets/screenshots/library.png) | ![library collection](assets/screenshots/library_collection.png) | ![reader](assets/screenshots/reader.png) | ![chat](assets/screenshots/chat.png) |
 
+## Download APK
+
+A pre-built Android APK is available for testing.
+
+[**Download Storyn APK**](apk/storyn-release.apk)
+
+> **Note:** This APK is provided for testing purposes. Android may display a warning when installing an APK downloaded outside the Google Play Store.
+
 
 ## Technologies & Tools Used
 

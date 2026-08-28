@@ -5,6 +5,7 @@ import '../../../library/domain/entities/reading_status.dart';
 import '../../../library/presentation/providers/library_provider.dart';
 import '../../domain/entities/book.dart';
 import '../widgets/add_to_library_sheet.dart';
+import '../../../book_chat/presentation/pages/book_chat_page.dart';
 
 class BookDetailPage extends StatefulWidget {
   final Book book;
@@ -167,30 +168,77 @@ class _BookDetailPageState extends State<BookDetailPage> {
             left: 20,
             right: 20,
             bottom: 20,
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isInLibrary ? AppColors.dotActive : AppColors.onboardingButton,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 4,
+            child: Row(
+              children: [
+                // Chat button
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.dotInactive,
+                    ),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.chat_bubble_outline,
+                      color: AppColors.onboardingButton,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BookChatPage(book: book),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-                icon: Icon(isInLibrary ? Icons.check : Icons.add, color: AppColors.white),
-                label: Text(
-                  isInLibrary ? 'In your library' : 'Add to library',
-                  style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.white),
+
+                const SizedBox(width: 12),
+
+                // Add to library button
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isInLibrary
+                          ? AppColors.dotActive
+                          : AppColors.onboardingButton,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 4,
+                    ),
+                    icon: Icon(
+                      isInLibrary ? Icons.check : Icons.add,
+                      color: AppColors.white,
+                    ),
+                    label: Text(
+                      isInLibrary ? 'In your library' : 'Add to library',
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.white,
+                      ),
+                    ),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: AppColors.white,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(24),
+                          ),
+                        ),
+                        builder: (_) => AddToLibrarySheet(book: book),
+                      );
+                    },
+                  ),
                 ),
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: AppColors.white,
-                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-                    builder: (_) => AddToLibrarySheet(book: book),
-                  );
-                },
-              ),
+              ],
             ),
           ),
         ],

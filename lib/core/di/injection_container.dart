@@ -23,6 +23,9 @@ import '../../features/settings/presentation/providers/settings_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../features/profile/presentation/providers/profile_refresh_provider.dart';
 import '../../features/auth/presentation/providers/auth_session_provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../features/book_chat/data/repositories/gemini_book_chat_repository.dart';
+import '../../features/book_chat/domain/repositories/book_chat_repository.dart';
 
 final sl = GetIt.instance;
 
@@ -50,6 +53,12 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<OpenLibraryRemoteDataSource>(
         () => OpenLibraryRemoteDataSourceImpl(client: sl()),
+  );
+
+  sl.registerLazySingleton<BookChatRepository>(
+        () => GeminiBookChatRepository(
+      apiKey: dotenv.env['GEMINI_API_KEY'] ?? '',
+    ),
   );
 
   sl.registerLazySingleton(() => http.Client());

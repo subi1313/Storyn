@@ -11,7 +11,16 @@ import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/saved_book.dart';
 import '../providers/library_provider.dart';
 
-enum ReaderThemeMode { light, dark, sepia }
+enum ReaderThemeMode {
+  light,
+  dark,
+  sepia,
+}
+
+enum ReaderViewMode {
+  paginated,
+  scrolled,
+}
 
 class _ThemeColors {
   final Color background;
@@ -74,9 +83,13 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
 
   ReaderThemeMode _themeMode = ReaderThemeMode.light;
 
-  // Reader controls are hidden by default.
+  ReaderViewMode _viewMode = ReaderViewMode.paginated;
+
   bool _showReaderControls = false;
 
+  // ---------------------------------------------------------------------------
+  // READING POSITION
+  // ---------------------------------------------------------------------------
 
   String? _lastKnownCfi;
   String? _pendingSaveCfi;
@@ -84,9 +97,15 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
 
   Timer? _saveDebounce;
 
+  // ---------------------------------------------------------------------------
+  // CHAPTERS
+  // ---------------------------------------------------------------------------
 
   List<EpubChapter> _chapters = [];
 
+  // ---------------------------------------------------------------------------
+  // BOOKMARKS
+  // ---------------------------------------------------------------------------
 
   late List<String> _bookmarks;
 
@@ -112,6 +131,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
 
     super.dispose();
   }
+
 
   Future<void> _loadBytes() async {
     final epubPath = widget.book.epubPath;
@@ -171,11 +191,25 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
   }
 
   void _setThemeMode(ReaderThemeMode mode) {
+    if (_themeMode == mode) return;
+
     setState(() {
       _themeMode = mode;
       _ready = false;
     });
   }
+
+  void _setViewMode(ReaderViewMode mode) {
+    if (_viewMode == mode) return;
+
+    _flushProgress();
+
+    setState(() {
+      _viewMode = mode;
+      _ready = false;
+    });
+  }
+
 
   void _changeFontSize(double delta) {
     final next = (_fontSize + delta).clamp(
@@ -193,6 +227,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
       );
     }
   }
+
 
   void _toggleReaderControls() {
     setState(() {
@@ -228,6 +263,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
     }
   }
 
+
   Future<void> _onEpubLoaded() async {
     if (!mounted) return;
 
@@ -235,7 +271,6 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
       _ready = true;
     });
 
-    // Restore saved position after the EPUB has loaded.
     if (_lastKnownCfi != null &&
         _lastKnownCfi!.isNotEmpty) {
       try {
@@ -251,6 +286,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
       }
     }
   }
+
 
   Future<void> _addBookmark() async {
     if (!_ready) return;
@@ -415,6 +451,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
     );
   }
 
+
   void _showChaptersSheet() {
     showModalBottomSheet(
       context: context,
@@ -502,9 +539,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
     );
   }
 
-  /// Called by flutter_epub_viewer when the user selects text.
-  ///
-  /// The selection is expected to contain a `cfiRange`.
+
   void _onTextSelected(dynamic selection) {
     try {
       final String cfiRange =
@@ -566,7 +601,6 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                 mainAxisAlignment:
                 MainAxisAlignment.spaceEvenly,
                 children: [
-
                   for (final color
                   in _kHighlightColors)
                     GestureDetector(
@@ -649,6 +683,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
     );
   }
 
+
   void _onRelocated(dynamic location) {
     try {
       final cfi =
@@ -713,6 +748,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
     _pendingSaveProgress = null;
   }
 
+
   Widget _themeChip(
       String label,
       ReaderThemeMode mode,
@@ -746,6 +782,49 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
     );
   }
 
+
+  Widget _viewModeChip(
+      String label,
+      ReaderViewMode mode,
+      IconData icon,
+      ) {
+    final selected =
+        _viewMode == mode;
+
+    return Padding(
+      padding:
+      const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        avatar: Icon(
+          icon,
+          size: 16,
+          color: selected
+              ? Colors.white
+              : AppColors.textPrimary,
+        ),
+        label: Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 12,
+          ),
+        ),
+        selected: selected,
+        onSelected: (_) {
+          _setViewMode(mode);
+        },
+        selectedColor:
+        AppColors.onboardingButton,
+        labelStyle: TextStyle(
+          color: selected
+              ? Colors.white
+              : AppColors.textPrimary,
+        ),
+      ),
+    );
+  }
+
+
   void _showReaderSettingsSheet() {
     showModalBottomSheet(
       context: context,
@@ -763,122 +842,165 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
               child: Padding(
                 padding:
                 const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize:
-                  MainAxisSize.min,
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Reading settings',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 16,
-                        fontWeight:
-                        FontWeight.w600,
-                      ),
-                    ),
-
-                    const SizedBox(
-                      height: 20,
-                    ),
-
-                    const Text(
-                      'Text size',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 13,
-                        fontWeight:
-                        FontWeight.w600,
-                      ),
-                    ),
-
-                    const SizedBox(
-                      height: 8,
-                    ),
-
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.text_decrease,
-                          ),
-                          onPressed: () {
-                            _changeFontSize(
-                              -2,
-                            );
-
-                            setSheetState(
-                                  () {},
-                            );
-                          },
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize:
+                    MainAxisSize.min,
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Reading settings',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 16,
+                          fontWeight:
+                          FontWeight.w600,
                         ),
+                      ),
 
-                        Expanded(
-                          child: Text(
-                            '${_fontSize.toInt()}px',
-                            textAlign:
-                            TextAlign.center,
-                            style:
-                            const TextStyle(
-                              fontFamily:
-                              'Inter',
+                      const SizedBox(
+                        height: 20,
+                      ),
+
+                      // -----------------------------------------------------
+                      // TEXT SIZE
+                      // -----------------------------------------------------
+
+                      const Text(
+                        'Text size',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 13,
+                          fontWeight:
+                          FontWeight.w600,
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 8,
+                      ),
+
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.text_decrease,
+                            ),
+                            onPressed: () {
+                              _changeFontSize(-2);
+
+                              setSheetState(
+                                    () {},
+                              );
+                            },
+                          ),
+
+                          Expanded(
+                            child: Text(
+                              '${_fontSize.toInt()}px',
+                              textAlign:
+                              TextAlign.center,
+                              style:
+                              const TextStyle(
+                                fontFamily:
+                                'Inter',
+                              ),
                             ),
                           ),
-                        ),
 
-                        IconButton(
-                          icon: const Icon(
-                            Icons.text_increase,
+                          IconButton(
+                            icon: const Icon(
+                              Icons.text_increase,
+                            ),
+                            onPressed: () {
+                              _changeFontSize(2);
+
+                              setSheetState(
+                                    () {},
+                              );
+                            },
                           ),
-                          onPressed: () {
-                            _changeFontSize(
-                              2,
-                            );
-
-                            setSheetState(
-                                  () {},
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(
-                      height: 16,
-                    ),
-
-                    const Text(
-                      'Theme',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 13,
-                        fontWeight:
-                        FontWeight.w600,
+                        ],
                       ),
-                    ),
 
-                    const SizedBox(
-                      height: 8,
-                    ),
+                      const SizedBox(
+                        height: 16,
+                      ),
 
-                    Row(
-                      children: [
-                        _themeChip(
-                          'Light',
-                          ReaderThemeMode.light,
+                      // -----------------------------------------------------
+                      // VIEW MODE
+                      // -----------------------------------------------------
+
+                      const Text(
+                        'View mode',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 13,
+                          fontWeight:
+                          FontWeight.w600,
                         ),
-                        _themeChip(
-                          'Sepia',
-                          ReaderThemeMode.sepia,
+                      ),
+
+                      const SizedBox(
+                        height: 8,
+                      ),
+
+                      Wrap(
+                        children: [
+                          _viewModeChip(
+                            'Pages',
+                            ReaderViewMode.paginated,
+                            Icons.auto_stories_outlined,
+                          ),
+                          _viewModeChip(
+                            'Scroll',
+                            ReaderViewMode.scrolled,
+                            Icons.swap_vert,
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(
+                        height: 16,
+                      ),
+
+                      // -----------------------------------------------------
+                      // THEME
+                      // -----------------------------------------------------
+
+                      const Text(
+                        'Theme',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 13,
+                          fontWeight:
+                          FontWeight.w600,
                         ),
-                        _themeChip(
-                          'Dark',
-                          ReaderThemeMode.dark,
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+
+                      const SizedBox(
+                        height: 8,
+                      ),
+
+                      Wrap(
+                        children: [
+                          _themeChip(
+                            'Light',
+                            ReaderThemeMode.light,
+                          ),
+                          _themeChip(
+                            'Sepia',
+                            ReaderThemeMode.sepia,
+                          ),
+                          _themeChip(
+                            'Dark',
+                            ReaderThemeMode.dark,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -893,6 +1015,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
       },
     );
   }
+
 
   Widget _buildReaderControls(
       _ThemeColors theme,
@@ -936,6 +1059,9 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
               MainAxisAlignment
                   .spaceAround,
               children: [
+                // -----------------------------------------------------------
+                // CHAPTERS
+                // -----------------------------------------------------------
 
                 _readerControlButton(
                   icon:
@@ -947,6 +1073,10 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                   _showChaptersSheet,
                 ),
 
+                // -----------------------------------------------------------
+                // BOOKMARKS
+                // -----------------------------------------------------------
+
                 _readerControlButton(
                   icon:
                   Icons.bookmarks_outlined,
@@ -956,6 +1086,10 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                   onPressed:
                   _showBookmarksSheet,
                 ),
+
+                // -----------------------------------------------------------
+                // ADD BOOKMARK
+                // -----------------------------------------------------------
 
                 _readerControlButton(
                   icon:
@@ -968,6 +1102,10 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                       ? _addBookmark
                       : null,
                 ),
+
+                // -----------------------------------------------------------
+                // SETTINGS
+                // -----------------------------------------------------------
 
                 _readerControlButton(
                   icon: Icons.text_fields,
@@ -1004,6 +1142,89 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
     );
   }
 
+
+  Widget _buildPageNavigation() {
+    if (_viewMode != ReaderViewMode.paginated) {
+      return const SizedBox.shrink();
+    }
+
+    return Stack(
+      children: [
+
+        Positioned(
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: MediaQuery.of(context).size.width * 0.25,
+          child: GestureDetector(
+            behavior:
+            HitTestBehavior.translucent,
+            onTap: _ready
+                ? () {
+              epubController.prev();
+            }
+                : null,
+          ),
+        ),
+
+        // ---------------------------------------------------------------------
+        // RIGHT 25% - NEXT PAGE
+        // ---------------------------------------------------------------------
+
+        Positioned(
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: MediaQuery.of(context).size.width * 0.25,
+          child: GestureDetector(
+            behavior:
+            HitTestBehavior.translucent,
+            onTap: _ready
+                ? () {
+              epubController.next();
+            }
+                : null,
+          ),
+        ),
+
+        // ---------------------------------------------------------------------
+        // CENTER 50% - SHOW/HIDE CONTROLS
+        // ---------------------------------------------------------------------
+
+        Positioned(
+          left: MediaQuery.of(context).size.width * 0.25,
+          right: MediaQuery.of(context).size.width * 0.25,
+          top: 0,
+          bottom: 0,
+          child: GestureDetector(
+            behavior:
+            HitTestBehavior.translucent,
+            onTap: _toggleReaderControls,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScrollNavigation() {
+    if (_viewMode != ReaderViewMode.scrolled) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      child: IgnorePointer(
+        child: Container(
+          color: Colors.transparent,
+        ),
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final theme =
@@ -1026,6 +1247,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
         child: Scaffold(
           backgroundColor:
           theme.background,
+
 
           appBar: AppBar(
             backgroundColor:
@@ -1103,7 +1325,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
 
               EpubViewer(
                 key: ValueKey(
-                  _themeMode,
+                  '${_themeMode.name}_${_viewMode.name}',
                 ),
 
                 epubSource:
@@ -1120,8 +1342,15 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                 displaySettings:
                 EpubDisplaySettings(
                   flow:
-                  EpubFlow.paginated,
-                  snap: true,
+                  _viewMode ==
+                      ReaderViewMode.paginated
+                      ? EpubFlow.paginated
+                      : EpubFlow.scrolled,
+
+                  snap:
+                  _viewMode ==
+                      ReaderViewMode.paginated,
+
                   theme:
                   EpubTheme.custom(
                     customCss:
@@ -1154,61 +1383,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
               ),
 
 
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: 56,
-                child:
-                GestureDetector(
-                  behavior:
-                  HitTestBehavior
-                      .translucent,
-                  onTap: _ready
-                      ? () {
-                    epubController
-                        .prev();
-                  }
-                      : null,
-                ),
-              ),
-
-
-              Positioned(
-                right: 0,
-                top: 0,
-                bottom: 0,
-                width: 56,
-                child:
-                GestureDetector(
-                  behavior:
-                  HitTestBehavior
-                      .translucent,
-                  onTap: _ready
-                      ? () {
-                    epubController
-                        .next();
-                  }
-                      : null,
-                ),
-              ),
-
-
-              Positioned(
-                left: 56,
-                right: 56,
-                top: 0,
-                bottom: 0,
-                child:
-                GestureDetector(
-                  behavior:
-                  HitTestBehavior
-                      .translucent,
-                  onTap:
-                  _toggleReaderControls,
-                ),
-              ),
-
+              _buildPageNavigation(),
 
               if (_showReaderControls)
                 _buildReaderControls(

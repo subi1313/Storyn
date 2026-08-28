@@ -113,6 +113,7 @@ lib/
 
 - Text highlighting is not currently available in the reader.
 - Push notification functionality has not yet been implemented.
+- Vertical scrolling of text is not functioning properly in the reader.
 ---
 ## Author
 **Supragya Singh Sipai**

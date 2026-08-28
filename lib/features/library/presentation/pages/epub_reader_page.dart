@@ -87,9 +87,6 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
 
   bool _showReaderControls = false;
 
-  // ---------------------------------------------------------------------------
-  // READING POSITION
-  // ---------------------------------------------------------------------------
 
   String? _lastKnownCfi;
   String? _pendingSaveCfi;
@@ -97,15 +94,9 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
 
   Timer? _saveDebounce;
 
-  // ---------------------------------------------------------------------------
-  // CHAPTERS
-  // ---------------------------------------------------------------------------
 
   List<EpubChapter> _chapters = [];
 
-  // ---------------------------------------------------------------------------
-  // BOOKMARKS
-  // ---------------------------------------------------------------------------
 
   late List<String> _bookmarks;
 
@@ -166,6 +157,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
       );
     }
   }
+
 
   Map<String, Map<String, String>> _cssForTheme(
       ReaderThemeMode mode,
@@ -228,12 +220,29 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
     }
   }
 
-
   void _toggleReaderControls() {
+    if (!mounted) return;
+
     setState(() {
       _showReaderControls = !_showReaderControls;
     });
   }
+
+  void _handleEpubTouchUp(
+      double normalizedX,
+      double normalizedY,
+      ) {
+    if (!_ready) return;
+
+    if (normalizedX < 0.25) {
+      epubController.prev();
+    } else if (normalizedX > 0.75) {
+      epubController.next();
+    } else {
+      _toggleReaderControls();
+    }
+  }
+
 
   Future<T?> _withRetry<T>(
       Future<T> Function() action,
@@ -353,6 +362,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
     );
   }
 
+
   void _showBookmarksSheet() {
     showModalBottomSheet(
       context: context,
@@ -378,9 +388,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
                 if (_bookmarks.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(
@@ -407,8 +415,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                         return ListTile(
                           leading: const Icon(
                             Icons.bookmark,
-                            color:
-                            AppColors.onboardingButton,
+                            color: AppColors.onboardingButton,
                             size: 20,
                           ),
                           title: Text(
@@ -477,9 +484,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
                 if (_chapters.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(
@@ -506,8 +511,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                         return ListTile(
                           leading: const Icon(
                             Icons.menu_book_outlined,
-                            color:
-                            AppColors.onboardingButton,
+                            color: AppColors.onboardingButton,
                             size: 20,
                           ),
                           title: Text(
@@ -517,8 +521,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                               fontSize: 13,
                             ),
                             maxLines: 2,
-                            overflow:
-                            TextOverflow.ellipsis,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           onTap: () {
                             Navigator.pop(sheetContext);
@@ -538,7 +541,6 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
       },
     );
   }
-
 
   void _onTextSelected(dynamic selection) {
     try {
@@ -588,8 +590,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
               ),
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius:
-                BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: const [
                   BoxShadow(
                     color: Colors.black26,
@@ -601,8 +602,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                 mainAxisAlignment:
                 MainAxisAlignment.spaceEvenly,
                 children: [
-                  for (final color
-                  in _kHighlightColors)
+                  for (final color in _kHighlightColors)
                     GestureDetector(
                       onTap: () {
                         try {
@@ -648,8 +648,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                       child: Container(
                         width: 32,
                         height: 32,
-                        decoration:
-                        BoxDecoration(
+                        decoration: BoxDecoration(
                           color: color,
                           shape: BoxShape.circle,
                           border: Border.all(
@@ -658,7 +657,6 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                         ),
                       ),
                     ),
-
                   GestureDetector(
                     onTap: removeEntry,
                     child: const Icon(
@@ -686,11 +684,9 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
 
   void _onRelocated(dynamic location) {
     try {
-      final cfi =
-      location.startCfi as String?;
+      final cfi = location.startCfi as String?;
 
-      final progress =
-      location.progress as double?;
+      final progress = location.progress as double?;
 
       if (cfi == null && progress == null) {
         return;
@@ -708,11 +704,9 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
         }
       });
 
-      _pendingSaveCfi =
-          cfi ?? _lastKnownCfi;
+      _pendingSaveCfi = cfi ?? _lastKnownCfi;
 
-      _pendingSaveProgress =
-          progress ?? _progress;
+      _pendingSaveProgress = progress ?? _progress;
 
       _saveDebounce?.cancel();
 
@@ -753,12 +747,10 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
       String label,
       ReaderThemeMode mode,
       ) {
-    final selected =
-        _themeMode == mode;
+    final selected = _themeMode == mode;
 
     return Padding(
-      padding:
-      const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.only(right: 8),
       child: ChoiceChip(
         label: Text(
           label,
@@ -771,8 +763,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
         onSelected: (_) {
           _setThemeMode(mode);
         },
-        selectedColor:
-        AppColors.onboardingButton,
+        selectedColor: AppColors.onboardingButton,
         labelStyle: TextStyle(
           color: selected
               ? Colors.white
@@ -782,18 +773,15 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
     );
   }
 
-
   Widget _viewModeChip(
       String label,
       ReaderViewMode mode,
       IconData icon,
       ) {
-    final selected =
-        _viewMode == mode;
+    final selected = _viewMode == mode;
 
     return Padding(
-      padding:
-      const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.only(right: 8),
       child: ChoiceChip(
         avatar: Icon(
           icon,
@@ -813,8 +801,7 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
         onSelected: (_) {
           _setViewMode(mode);
         },
-        selectedColor:
-        AppColors.onboardingButton,
+        selectedColor: AppColors.onboardingButton,
         labelStyle: TextStyle(
           color: selected
               ? Colors.white
@@ -836,16 +823,13 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
       ),
       builder: (sheetContext) {
         return StatefulBuilder(
-          builder:
-              (context, setSheetState) {
+          builder: (context, setSheetState) {
             return SafeArea(
               child: Padding(
-                padding:
-                const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 child: SingleChildScrollView(
                   child: Column(
-                    mainAxisSize:
-                    MainAxisSize.min,
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment:
                     CrossAxisAlignment.start,
                     children: [
@@ -854,32 +838,22 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 16,
-                          fontWeight:
-                          FontWeight.w600,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
+                      const SizedBox(height: 20),
 
-                      const SizedBox(
-                        height: 20,
-                      ),
-
-                      // -----------------------------------------------------
-                      // TEXT SIZE
-                      // -----------------------------------------------------
 
                       const Text(
                         'Text size',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 13,
-                          fontWeight:
-                          FontWeight.w600,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
 
-                      const SizedBox(
-                        height: 8,
-                      ),
+                      const SizedBox(height: 8),
 
                       Row(
                         children: [
@@ -890,25 +864,18 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                             onPressed: () {
                               _changeFontSize(-2);
 
-                              setSheetState(
-                                    () {},
-                              );
+                              setSheetState(() {});
                             },
                           ),
-
                           Expanded(
                             child: Text(
                               '${_fontSize.toInt()}px',
-                              textAlign:
-                              TextAlign.center,
-                              style:
-                              const TextStyle(
-                                fontFamily:
-                                'Inter',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
                               ),
                             ),
                           ),
-
                           IconButton(
                             icon: const Icon(
                               Icons.text_increase,
@@ -916,35 +883,25 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                             onPressed: () {
                               _changeFontSize(2);
 
-                              setSheetState(
-                                    () {},
-                              );
+                              setSheetState(() {});
                             },
                           ),
                         ],
                       ),
 
-                      const SizedBox(
-                        height: 16,
-                      ),
+                      const SizedBox(height: 16),
 
-                      // -----------------------------------------------------
-                      // VIEW MODE
-                      // -----------------------------------------------------
 
                       const Text(
                         'View mode',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 13,
-                          fontWeight:
-                          FontWeight.w600,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
 
-                      const SizedBox(
-                        height: 8,
-                      ),
+                      const SizedBox(height: 8),
 
                       Wrap(
                         children: [
@@ -961,27 +918,19 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                         ],
                       ),
 
-                      const SizedBox(
-                        height: 16,
-                      ),
+                      const SizedBox(height: 16),
 
-                      // -----------------------------------------------------
-                      // THEME
-                      // -----------------------------------------------------
 
                       const Text(
                         'Theme',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 13,
-                          fontWeight:
-                          FontWeight.w600,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
 
-                      const SizedBox(
-                        height: 8,
-                      ),
+                      const SizedBox(height: 8),
 
                       Wrap(
                         children: [
@@ -1029,92 +978,59 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
         child: Material(
           color: Colors.transparent,
           child: Container(
-            padding:
-            const EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: 8,
               vertical: 8,
             ),
-            decoration:
-            BoxDecoration(
-              color: theme.background
-                  .withOpacity(0.97),
-              borderRadius:
-              BorderRadius.circular(18),
+            decoration: BoxDecoration(
+              color: theme.background.withOpacity(0.97),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: theme.foreground
-                    .withOpacity(0.08),
+                color: theme.foreground.withOpacity(0.08),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black
-                      .withOpacity(0.18),
+                  color: Colors.black.withOpacity(0.18),
                   blurRadius: 16,
-                  offset:
-                  const Offset(0, 5),
+                  offset: const Offset(0, 5),
                 ),
               ],
             ),
             child: Row(
               mainAxisAlignment:
-              MainAxisAlignment
-                  .spaceAround,
+              MainAxisAlignment.spaceAround,
               children: [
-                // -----------------------------------------------------------
-                // CHAPTERS
-                // -----------------------------------------------------------
 
                 _readerControlButton(
-                  icon:
-                  Icons.list_alt_outlined,
+                  icon: Icons.list_alt_outlined,
                   tooltip: 'Chapters',
-                  foreground:
-                  theme.foreground,
-                  onPressed:
-                  _showChaptersSheet,
+                  foreground: theme.foreground,
+                  onPressed: _showChaptersSheet,
                 ),
 
-                // -----------------------------------------------------------
-                // BOOKMARKS
-                // -----------------------------------------------------------
 
                 _readerControlButton(
-                  icon:
-                  Icons.bookmarks_outlined,
+                  icon: Icons.bookmarks_outlined,
                   tooltip: 'Bookmarks',
-                  foreground:
-                  theme.foreground,
-                  onPressed:
-                  _showBookmarksSheet,
+                  foreground: theme.foreground,
+                  onPressed: _showBookmarksSheet,
                 ),
 
-                // -----------------------------------------------------------
-                // ADD BOOKMARK
-                // -----------------------------------------------------------
 
                 _readerControlButton(
-                  icon:
-                  Icons.bookmark_add_outlined,
-                  tooltip:
-                  'Bookmark this page',
-                  foreground:
-                  theme.foreground,
+                  icon: Icons.bookmark_add_outlined,
+                  tooltip: 'Bookmark this page',
+                  foreground: theme.foreground,
                   onPressed: _ready
                       ? _addBookmark
                       : null,
                 ),
 
-                // -----------------------------------------------------------
-                // SETTINGS
-                // -----------------------------------------------------------
-
                 _readerControlButton(
                   icon: Icons.text_fields,
-                  tooltip:
-                  'Reading settings',
-                  foreground:
-                  theme.foreground,
-                  onPressed:
-                  _showReaderSettingsSheet,
+                  tooltip: 'Reading settings',
+                  foreground: theme.foreground,
+                  onPressed: _showReaderSettingsSheet,
                 ),
               ],
             ),
@@ -1143,140 +1059,42 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
   }
 
 
-  Widget _buildPageNavigation() {
-    if (_viewMode != ReaderViewMode.paginated) {
-      return const SizedBox.shrink();
-    }
-
-    return Stack(
-      children: [
-
-        Positioned(
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: MediaQuery.of(context).size.width * 0.25,
-          child: GestureDetector(
-            behavior:
-            HitTestBehavior.translucent,
-            onTap: _ready
-                ? () {
-              epubController.prev();
-            }
-                : null,
-          ),
-        ),
-
-        // ---------------------------------------------------------------------
-        // RIGHT 25% - NEXT PAGE
-        // ---------------------------------------------------------------------
-
-        Positioned(
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: MediaQuery.of(context).size.width * 0.25,
-          child: GestureDetector(
-            behavior:
-            HitTestBehavior.translucent,
-            onTap: _ready
-                ? () {
-              epubController.next();
-            }
-                : null,
-          ),
-        ),
-
-        // ---------------------------------------------------------------------
-        // CENTER 50% - SHOW/HIDE CONTROLS
-        // ---------------------------------------------------------------------
-
-        Positioned(
-          left: MediaQuery.of(context).size.width * 0.25,
-          right: MediaQuery.of(context).size.width * 0.25,
-          top: 0,
-          bottom: 0,
-          child: GestureDetector(
-            behavior:
-            HitTestBehavior.translucent,
-            onTap: _toggleReaderControls,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildScrollNavigation() {
-    if (_viewMode != ReaderViewMode.scrolled) {
-      return const SizedBox.shrink();
-    }
-
-    return Positioned(
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-      child: IgnorePointer(
-        child: Container(
-          color: Colors.transparent,
-        ),
-      ),
-    );
-  }
-
-
   @override
   Widget build(BuildContext context) {
-    final theme =
-    _kThemeColors[_themeMode]!;
+    final theme = _kThemeColors[_themeMode]!;
 
     return PopScope(
-      onPopInvokedWithResult:
-          (didPop, _) {
+      onPopInvokedWithResult: (didPop, _) {
         if (didPop) {
           _flushProgress();
         }
       },
-      child: AnnotatedRegion<
-          SystemUiOverlayStyle>(
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
         value:
-        theme.statusBarBrightness ==
-            Brightness.dark
+        theme.statusBarBrightness == Brightness.dark
             ? SystemUiOverlayStyle.light
             : SystemUiOverlayStyle.dark,
         child: Scaffold(
-          backgroundColor:
-          theme.background,
-
-
+          backgroundColor: theme.background,
           appBar: AppBar(
-            backgroundColor:
-            theme.background,
+            backgroundColor: theme.background,
             elevation: 0,
-
-            iconTheme:
-            IconThemeData(
+            iconTheme: IconThemeData(
               color: theme.foreground,
             ),
-
             title: Text(
               widget.book.title,
               maxLines: 1,
-              overflow:
-              TextOverflow.ellipsis,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 15,
-                color:
-                theme.foreground,
+                color: theme.foreground,
               ),
             ),
-
             actions: [
               Padding(
-                padding:
-                const EdgeInsets
-                    .symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                 ),
                 child: Center(
@@ -1285,115 +1103,74 @@ class _EpubReaderPageState extends State<EpubReaderPage> {
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 12,
-                      fontWeight:
-                      FontWeight.w600,
-                      color: theme
-                          .foreground
-                          .withOpacity(0.7),
+                      fontWeight: FontWeight.w600,
+                      color: theme.foreground.withOpacity(0.7),
                     ),
                   ),
                 ),
               ),
             ],
-
-            bottom:
-            PreferredSize(
-              preferredSize:
-              const Size.fromHeight(
-                4,
-              ),
-              child:
-              LinearProgressIndicator(
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(4),
+              child: LinearProgressIndicator(
                 value: _progress,
-                backgroundColor:
-                AppColors.dotInactive,
-                color: AppColors
-                    .onboardingButton,
+                backgroundColor: AppColors.dotInactive,
+                color: AppColors.onboardingButton,
                 minHeight: 4,
               ),
             ),
           ),
-
-
           body: _epubBytes == null
               ? const Center(
-            child:
-            CircularProgressIndicator(),
+            child: CircularProgressIndicator(),
           )
               : Stack(
             children: [
-
               EpubViewer(
                 key: ValueKey(
                   '${_themeMode.name}_${_viewMode.name}',
                 ),
-
-                epubSource:
-                EpubSource.fromData(
+                epubSource: EpubSource.fromData(
                   _epubBytes!,
                 ),
-
-                epubController:
-                epubController,
-
-                initialCfi:
-                _lastKnownCfi,
-
-                displaySettings:
-                EpubDisplaySettings(
-                  flow:
-                  _viewMode ==
+                epubController: epubController,
+                initialCfi: _lastKnownCfi,
+                displaySettings: EpubDisplaySettings(
+                  flow: _viewMode ==
                       ReaderViewMode.paginated
                       ? EpubFlow.paginated
                       : EpubFlow.scrolled,
-
-                  snap:
-                  _viewMode ==
+                  snap: _viewMode ==
                       ReaderViewMode.paginated,
-
-                  theme:
-                  EpubTheme.custom(
-                    customCss:
-                    _cssForTheme(
+                  theme: EpubTheme.custom(
+                    customCss: _cssForTheme(
                       _themeMode,
                     ),
                   ),
                 ),
-
-                onEpubLoaded:
-                _onEpubLoaded,
-
-                onChaptersLoaded:
-                    (chapters) {
-                  if (!mounted) {
-                    return;
-                  }
+                onEpubLoaded: _onEpubLoaded,
+                onChaptersLoaded: (chapters) {
+                  if (!mounted) return;
 
                   setState(() {
-                    _chapters =
-                        chapters;
+                    _chapters = chapters;
                   });
                 },
+                onRelocated: _onRelocated,
+                onTextSelected: _onTextSelected,
 
-                onRelocated:
-                _onRelocated,
-
-                onTextSelected:
-                _onTextSelected,
+                // Touch coordinates come from inside the WebView.
+                // This avoids relying on Flutter hit-testing over
+                // the platform view.
+                onTouchUp: _handleEpubTouchUp,
               ),
 
-
-              _buildPageNavigation(),
-
               if (_showReaderControls)
-                _buildReaderControls(
-                  theme,
-                ),
+                _buildReaderControls(theme),
 
               if (!_ready)
                 const Center(
-                  child:
-                  CircularProgressIndicator(),
+                  child: CircularProgressIndicator(),
                 ),
             ],
           ),
